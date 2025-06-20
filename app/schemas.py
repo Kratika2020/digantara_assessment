@@ -16,6 +16,17 @@ class JobSchema(Schema):
     def validate_interval_if_repeat(self, data, **kwargs):
         if data.get("repeat") and not data.get("interval"):
             raise ValidationError("Interval is required when Repeat flag is set.", field_name = "interval")
+    
+    @validates("jobname")
+    def validate_jobname(self, value):
+        if len(value.strip()) < 3 :
+            raise ValidationError("Job Name must be at least of 3 characters.")
+        
+    @validates_schema
+    def validate_start_date_time(self, data, **kwargs):
+        timestamp = datetime.combine(data["startdate"], data["starttime"])
+        if timestamp < datetime.utcnow():
+            raise ValidationError("Job start datetime must be in future.", field_name = "startdate")
 
 # Schema for Model: JobLog       
 class JobLogSchema(Schema):
