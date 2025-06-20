@@ -17,9 +17,10 @@ def create_app():
     with app.app_context():
         db.create_all()
 
-    from .routes import register_routes
     api = Api(app)
-    register_routes(app, api)
+
+    from .routes import blp 
+    api.register_blueprint(blp)
 
     return app
     
