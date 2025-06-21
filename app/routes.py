@@ -1,7 +1,7 @@
 from flask.views import MethodView
-from flask import request, render_template, redirect, url_for
+from flask import request, render_template, redirect
 from flask_smorest import Blueprint
-from .models import db, Job, JobLog
+from .models import Job, JobLog
 from .schemas import JobSchema, JobLogSchema, JobDetailSchema
 from . import db
 from marshmallow import ValidationError
@@ -26,7 +26,18 @@ class JobsList(MethodView) :
         return render_template("jobs.html", jobs=jobs)
         
     # to create a job
+    @blp.doc(
+        requestBody={
+            "required": True,
+            "content": {
+                "application/json": {
+                    "schema": JobSchema
+                }
+            }
+        }
+    )
     def post(self):
+        # for input validation
         schema = JobSchema()
         if request.is_json:
             try:
@@ -45,6 +56,7 @@ class JobsList(MethodView) :
                 return render_template("job_form.html", errors=err.messages, form=form), 400
             
         # Create entry in Master Table
+        print(job_data)
         new_job = Job(**job_data)
         db.session.add(new_job)
         db.session.commit()
@@ -92,9 +104,10 @@ class JobDetail(MethodView) :
 
     
 
-    # Get    : /jobs        | to get all the jobs details               (only master table)
-    # Get    : /jobs/:id    | to get jobid = id details                 (master and log table)
-    # Post   : /jobs        | to create a new job                       (update master and log table)
+    # Get    : /jobs                  | to get all the jobs details               (only master table)
+    # Get    : /jobs/:id              | to get jobid = id details                 (master and log table)
+    # Get    : /jobs?form=true        | to create job form                        (only master table and log table)
+    # Post   : /jobs                  | to create a new job                       (update master and log table)
 
     # function for Executing the jobs
     
