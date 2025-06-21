@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Jobs List</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <h2>Jobs</h2>
+    <div class="card">
+      <table>
+        <tr>
+          <th>Job ID</th>
+          <th>Job Name</th>
+          <th>Start Date</th>
+          <th>Start Time</th>
+          <th>Repeat</th>
+          <th>Interval</th>
+          <th>Active</th>
+          <th>View Job Details</th>
+        </tr>
+        {% for job in jobs %}
+        <tr>
+          <td>{{ job.jobid }}</td>
+          <td>{{ job.jobname }}</td>
+          <td>{{ job.startdate }}</td>
+          <td>{{ job.starttime }}</td>
+          <td>{{ "Yes" if job.repeat else "No" }}</td>
+          <td>{{ job.interval or "N/A" }}</td>
+          <td>{{ "Yes" if job.active else "No" }}</td>
+          <td>
+            <a href="/jobs/{{ job.jobid }}" class="btn btn-sm btn-info">View</a>
+          </td>
+        </tr>
+        {% endfor %}
+      </table>
+    </div>
+    <br /><br />
+    <a href="/jobs?form=true" class="btn btn-primary mb-3">Create New Job</a>
+  </body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Create Job</title>
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='style.css') }}"
+    />
+  </head>
+  <body>
+    <h1>Create New Job</h1>
+    {% if errors %}
+    <div style="color: red">
+      <ul>
+        {% for field, messages in errors.items() %}
+        <li><strong>{{ field }}:</strong> {{ messages | join(', ') }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <form method="post" action="/jobs">
+      <label for="jobname">Job Name</label>
+      <input
+        type="text"
+        name="jobname"
+        value="{{ form.jobname or '' }}"
+        required
+      />
+
+      <label for="startdate">Start Date</label>
+      <input
+        type="date"
+        name="startdate"
+        value="{{ form.startdate or '' }}"
+        required
+      />
+
+      <label for="starttime">Start Time</label>
+      <input
+        type="time"
+        name="starttime"
+        value="{{ form.starttime or '' }}"
+        required
+      />
+
+      <label for="repeat">Repeat</label>
+      <input
+        type="checkbox"
+        name="repeat"
+        {%
+        if
+        form.repeat
+        %}checked{%
+        endif
+        %}
+      />
+
+      <label for="interval">Interval(seconds)</label>
+      <input type="text" name="interval" value="{{ form.interval or '' }}" />
+
+      <label for="active">Active</label>
+      <input
+        type="checkbox"
+        name="active"
+        {%
+        if
+        form.active
+        %}checked{%
+        endif
+        %}
+        checked
+      />
+
+      <input type="submit" value="Create" />
+    </form>
+    <a href="/jobs">Back to Job List</a>
+  </body>
+</html>

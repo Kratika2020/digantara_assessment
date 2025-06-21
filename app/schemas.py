@@ -42,3 +42,7 @@ class JobLogSchema(Schema):
         allowed = {"pending", "finished", "failed"}
         if value.lower() not in allowed :
             raise ValidationError(f"Status must be one of {allowed}")
+        
+class JobDetailSchema(Schema):
+    job = fields.Nested(JobSchema)
+    logs = fields.List(fields.Nested(JobLogSchema))
