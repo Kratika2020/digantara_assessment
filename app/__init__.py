@@ -2,6 +2,9 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_smorest import Api
 from flask_marshmallow import Marshmallow
+import pytz
+
+ist_tz = pytz.timezone("Asia/Kolkata")
 
 db = SQLAlchemy()
 ma = Marshmallow()

@@ -2,10 +2,10 @@ from flask.views import MethodView
 from flask import request, render_template, redirect
 from flask_smorest import Blueprint
 from .models import Job, JobLog
-from .schemas import JobSchema, JobLogSchema, JobDetailSchema
-from . import db
+from .schemas import JobSchema, JobLogSchema
+from . import db, ist_tz
 from marshmallow import ValidationError
-from datetime import datetime
+from datetime import datetime, timedelta
 
 blp = Blueprint("Jobs", "jobs", url_prefix="/jobs", description="Operations on Jobs")
 
@@ -99,6 +99,56 @@ class JobDetail(MethodView) :
             }
         
         return render_template("job_detail.html", job=job, logs=logs)
+
+
+@blp.route("/run")
+class JobRun(MethodView):
+    # Assumption : This endpoint executes Jobs on their scheduled Time.
+    def post(self) :
+        # fetch all the jobs where active = True 
+        # fetch latest logs for all jobs where status = pending and nextrun < currentT.S.
+        # now = datetime.now(tz = ist_tz)
+        now = datetime.now()
+        print(now)
+
+        # Fetch logs where job is active, next run time has arrived and status is pending
+        logs = db.session.query(JobLog).join(Job).filter(
+            Job.active == True,
+            JobLog.nextrun <= now,
+            JobLog.status == 'pending'
+            ).all()
+        # if True : 
+        #     job_log = JobLogSchema() 
+        #     # return {"message": "Not fetched", "now": now, "logs":job_log.dump(logs)}, 200
+
+        print(logs)
+        for log in logs:
+            print(f"JobID: {log.jobid}, Status: {log.status}, NextRun: {log.nextrun}")
+            job = log.job  # Access the related Job instance
+            exec_timestamp = log.nextrun  # Store current nextrun before update
+            print("exec time",exec_timestamp)
+
+            if not job.repeat:
+                # One-time job: mark as finished and deactivate
+                log.lastrun = exec_timestamp
+                log.nextrun = None
+                log.status = 'finished'
+                job.active = False
+            else:
+                # Repeating job: finish current, create new JobLog with updated times
+                log.status = 'finished'
+                new_nextrun = exec_timestamp + timedelta(seconds = job.interval)
+
+                new_log = JobLog(
+                    jobid=job.jobid,
+                    lastrun=exec_timestamp,
+                    nextrun= new_nextrun,
+                    status='pending'
+                )
+                db.session.add(new_log)
+
+        db.session.commit()
+        return {"message": "Pending job logs processed successfully."}, 200
 
     
 

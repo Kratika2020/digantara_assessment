@@ -1,14 +1,15 @@
 from marshmallow import Schema, fields, validates, ValidationError, validates_schema
-from datetime import datetime
+from datetime import datetime, timezone
+from . import ist_tz
 
 # Schema for Model: Job
 class JobSchema(Schema):
-    jobid = fields.Int(dump_only = True)
+    jobid = fields.Integer(dump_only = True)
     jobname = fields.String(required = True)
     startdate = fields.Date(allow_none = False)
     starttime = fields.Time(allow_none = False)
     repeat = fields.Boolean(missing = False)
-    interval = fields.TimeDelta(precision = 'seconds', allow_none = True)
+    interval = fields.Integer(allow_none = True)
     active = fields.Boolean(missing = True)
 
     # validation of link between Repeat flag and Interval column
@@ -25,13 +26,13 @@ class JobSchema(Schema):
     @validates_schema
     def validate_start_date_time(self, data, **kwargs):
         timestamp = datetime.combine(data["startdate"], data["starttime"])
-        if timestamp < datetime.utcnow():
+        if timestamp < datetime.now():
             raise ValidationError("Job start datetime must be in future.", field_name = "startdate")
 
 # Schema for Model: JobLog       
 class JobLogSchema(Schema):
-    logid = fields.Int(dump_only = True)
-    jobid = fields.Int(required = True)
+    logid = fields.Integer(dump_only = True)
+    jobid = fields.Integer(required = True)
     lastrun = fields.DateTime(dump_only = True)
     nextrun = fields.DateTime(dump_only = True)
     status = fields.String(required = True)

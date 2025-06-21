@@ -1,7 +1,8 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CheckConstraint
-from datetime import datetime
-from . import db
+from datetime import datetime, timezone
+from . import db, ist_tz
+
 
 
 # Master Table : Job
@@ -10,10 +11,10 @@ class Job(db.Model):
 
     jobid = db.Column(db.Integer, primary_key = True)
     jobname = db.Column(db.String(100), nullable = False)
-    startdate = db.Column(db.Date, nullable = False, default = datetime.utcnow().date)
-    starttime = db.Column(db.Time, nullable = False, default = datetime.utcnow().time)
+    startdate = db.Column(db.Date, nullable = False, default = datetime.now().date)
+    starttime = db.Column(db.Time, nullable = False, default = datetime.now().time)
     repeat = db.Column(db.Boolean, default = False)
-    interval = db.Column(db.Interval, nullable = True)
+    interval = db.Column(db.Integer, nullable = True)
     active = db.Column(db.Boolean, default = True)
 
     # Relationship between Job and Joblog tables

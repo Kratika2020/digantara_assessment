@@ -7,6 +7,7 @@ services:
       POSTGRES_USER: root
       POSTGRES_PASSWORD: root
       POSTGRES_DB: jobdb
+      TZ: Asia/Kolkata
     ports:
       - "5433:5432"
     volumes:
@@ -18,6 +19,8 @@ services:
       - "8080:8080"
     depends_on:
       - db
+    environment:
+      - TZ=Asia/Kolkata
 
   api:
     build: .
@@ -28,6 +31,8 @@ services:
       - db
     volumes:
       - .:/app
+    environment:
+      - TZ=Asia/Kolkata
 
 volumes:
   postgres_data:
