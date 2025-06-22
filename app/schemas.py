@@ -1,6 +1,5 @@
 from marshmallow import Schema, fields, validates, ValidationError, validates_schema
 from datetime import datetime, timezone
-from . import ist_tz
 
 # Schema for Model: Job
 class JobSchema(Schema):
@@ -17,6 +16,8 @@ class JobSchema(Schema):
     def validate_interval_if_repeat(self, data, **kwargs):
         if data.get("repeat") and not data.get("interval"):
             raise ValidationError("Interval is required when Repeat flag is set.", field_name = "interval")
+        if not data.get("repeat") and data.get("interval"):
+            raise ValidationError("Interval should not be set when Repeat flag is not set.", field_name = "interval")
     
     @validates("jobname")
     def validate_jobname(self, value):

@@ -1,8 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import CheckConstraint
 from datetime import datetime, timezone
-from . import db, ist_tz
-
+from . import db
 
 
 # Master Table : Job

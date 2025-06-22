@@ -3,12 +3,13 @@ from flask import request, render_template, redirect
 from flask_smorest import Blueprint
 from .models import Job, JobLog
 from .schemas import JobSchema, JobLogSchema
-from . import db, ist_tz
+from . import db
 from marshmallow import ValidationError
 from datetime import datetime, timedelta
 
 blp = Blueprint("Jobs", "jobs", url_prefix="/jobs", description="Operations on Jobs")
 
+# To get all jobslist, create a job
 @blp.route("/")
 class JobsList(MethodView) :
     def get(self):
@@ -52,11 +53,9 @@ class JobsList(MethodView) :
                 form["active"] = "active" in request.form
                 job_data = schema.load(form)
             except ValidationError as err:
-                print(err.messages)
                 return render_template("job_form.html", errors=err.messages, form=form), 400
             
         # Create entry in Master Table
-        print(job_data)
         new_job = Job(**job_data)
         db.session.add(new_job)
         db.session.commit()
@@ -101,15 +100,12 @@ class JobDetail(MethodView) :
         return render_template("job_detail.html", job=job, logs=logs)
 
 
+# To utilize the endpoint for updating the status and logs for Jobs
 @blp.route("/run")
 class JobRun(MethodView):
     # Assumption : This endpoint executes Jobs on their scheduled Time.
     def post(self) :
-        # fetch all the jobs where active = True 
-        # fetch latest logs for all jobs where status = pending and nextrun < currentT.S.
-        # now = datetime.now(tz = ist_tz)
         now = datetime.now()
-        print(now)
 
         # Fetch logs where job is active, next run time has arrived and status is pending
         logs = db.session.query(JobLog).join(Job).filter(
@@ -117,16 +113,11 @@ class JobRun(MethodView):
             JobLog.nextrun <= now,
             JobLog.status == 'pending'
             ).all()
-        # if True : 
-        #     job_log = JobLogSchema() 
-        #     # return {"message": "Not fetched", "now": now, "logs":job_log.dump(logs)}, 200
 
-        print(logs)
         for log in logs:
             print(f"JobID: {log.jobid}, Status: {log.status}, NextRun: {log.nextrun}")
-            job = log.job  # Access the related Job instance
+            job = log.job  
             exec_timestamp = log.nextrun  # Store current nextrun before update
-            print("exec time",exec_timestamp)
 
             if not job.repeat:
                 # One-time job: mark as finished and deactivate
@@ -148,16 +139,4 @@ class JobRun(MethodView):
                 db.session.add(new_log)
 
         db.session.commit()
-        return {"message": "Pending job logs processed successfully."}, 200
-
-    
-
-    
-
-    # Get    : /jobs                  | to get all the jobs details               (only master table)
-    # Get    : /jobs/:id              | to get jobid = id details                 (master and log table)
-    # Get    : /jobs?form=true        | to create job form                        (only master table and log table)
-    # Post   : /jobs                  | to create a new job                       (update master and log table)
-
-    # function for Executing the jobs
-    
+        return {"message": "Pending job logs processed successfully."}, 200    
